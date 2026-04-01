@@ -1,39 +1,47 @@
 import { useCallback, useEffect, useRef } from 'react'
-import Link from 'next/link'
-import { useConfig } from '@/lib/config'
-import { useLocale } from '@/lib/locale'
 
-const NavBar = () => {
-  const BLOG = useConfig()
-  const locale = useLocale()
-  const links = [
-    { id: 0, name: locale.NAV.INDEX, to: BLOG.path || '/', show: true },
-    { id: 1, name: locale.NAV.ABOUT, to: '/about', show: BLOG.showAbout },
-    { id: 2, name: locale.NAV.MANIFESTO, to: '/manifesto', show: true }
-  ]
-  return (
-    <ul className="flex flex-row gap-6 md:gap-10">
-      {links.map(
-        link =>
-          link.show && (
-            <li
-              key={link.id}
-              className="block text-sm text-black dark:text-gray-50 nav font-mono tracking-tight"
-            >
-              <Link href={link.to} target={link.external ? '_blank' : null}>{link.name}</Link>
-            </li>
-          )
-      )}
-    </ul>
-  )
-}
+const HEADER_OFFSET = 65
 
-export default function Header ({ navBarTitle, fullWidth }) {
-  const BLOG = useConfig()
+const NavBar = ({ links, onNavigate }) => (
+  <ul className="flex flex-row flex-wrap justify-center gap-x-6 gap-y-3 md:gap-x-10">
+    {links.map(link => (
+      <li
+        key={link.id}
+        suppressHydrationWarning
+        className="block text-sm text-black dark:text-gray-50 nav font-mono tracking-tight"
+      >
+        <a
+          href={`#${link.id.replaceAll('-', '')}`}
+          onClick={event => onNavigate(event, link.id)}
+        >
+          {link.name}
+        </a>
+      </li>
+    ))}
+  </ul>
+)
 
-  const useSticky = !BLOG.autoCollapsedNavBar
+export default function Header ({ fullWidth, links = [] }) {
+  const useSticky = true
   const navRef = useRef(/** @type {HTMLDivElement} */ undefined)
   const sentinelRef = useRef(/** @type {HTMLDivElement} */ undefined)
+
+  const scrollToHeading = useCallback((event, id) => {
+    event.preventDefault()
+
+    const cleanId = id.replaceAll('-', '')
+    const target = document.getElementById(cleanId) ||
+      document.querySelector(`.notion-block-${cleanId}`)
+
+    if (!target) return
+
+    const top = document.documentElement.scrollTop + target.getBoundingClientRect().top - HEADER_OFFSET
+    document.documentElement.scrollTo({
+      top,
+      behavior: 'smooth'
+    })
+  }, [])
+
   const handler = useCallback(([entry]) => {
     if (useSticky && navRef.current) {
       navRef.current?.classList.toggle('sticky-nav-full', !entry.isIntersecting)
@@ -61,6 +69,8 @@ export default function Header ({ navBarTitle, fullWidth }) {
     })
   }
 
+  if (links.length === 0) return null
+
   return (
     <>
       <div className="observer-element h-4 md:h-12" ref={sentinelRef}></div>
@@ -72,7 +82,7 @@ export default function Header ({ navBarTitle, fullWidth }) {
         ref={navRef}
         onClick={handleClickHeader}
       >
-        <NavBar />
+        <NavBar links={links} onNavigate={scrollToHeading} />
       </div>
     </>
   )

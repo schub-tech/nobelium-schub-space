@@ -6,7 +6,7 @@ import PropTypes from 'prop-types'
 import cn from 'classnames'
 // import BlogPost from './BlogPost'
 
-const Container = ({ children, layout, fullWidth, ...customMeta }) => {
+const Container = ({ children, layout, fullWidth, headerLinks, ...customMeta }) => {
   const BLOG = useConfig()
 
   const url = BLOG.path.length ? `${BLOG.link}/${BLOG.path}` : BLOG.link
@@ -69,10 +69,7 @@ const Container = ({ children, layout, fullWidth, ...customMeta }) => {
         className={`wrapper ${BLOG.font === 'serif' ? 'font-serif' : 'font-sans'
           }`}
       >
-        <Header
-          navBarTitle={layout === 'blog' ? meta.title : null}
-          fullWidth={fullWidth}
-        />
+        <Header fullWidth={fullWidth} links={headerLinks} />
         <main className={cn(
           'flex-grow transition-all',
           layout !== 'blog' && ['self-center px-4', fullWidth ? 'md:px-24' : 'w-full max-w-2xl']
@@ -86,7 +83,8 @@ const Container = ({ children, layout, fullWidth, ...customMeta }) => {
 }
 
 Container.propTypes = {
-  children: PropTypes.node
+  children: PropTypes.node,
+  headerLinks: PropTypes.array
 }
 
 export default Container

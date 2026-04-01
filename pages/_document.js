@@ -87,6 +87,15 @@ class MyDocument extends Document {
         </Head>
         <body className="bg-day dark:bg-night">
           <Main />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                document.querySelectorAll('[data-cursor-ref]').forEach(node => {
+                  node.removeAttribute('data-cursor-ref')
+                })
+              `
+            }}
+          />
           <NextScript />
         </body>
       </Html>

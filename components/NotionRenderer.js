@@ -6,6 +6,8 @@ import { FONTS_SANS, FONTS_SERIF } from '@/consts'
 import { useConfig } from '@/lib/config'
 import Toggle from '@/components/notion-blocks/Toggle'
 
+const ALUMNI_COLLECTION_ID = '3354585c-aca1-808a-ba06-000b3bc47165'
+
 // Lazy-load some heavy components & override the renderers of some block types
 const components = {
   /* Lazy-load */
@@ -69,7 +71,19 @@ const components = {
   }),
   // Database block
   Collection: dynamic(() => {
-    return import('react-notion-x/build/third-party/collection').then(module => module.Collection)
+    return import('react-notion-x/build/third-party/collection').then(module => {
+      const DefaultCollection = module.Collection
+
+      return function CollectionSwitch (props) {
+        const block = props.block?.value || props.block
+        const collectionId = block?.collection_id || block?.format?.collection_pointer?.id
+        if (collectionId === ALUMNI_COLLECTION_ID) {
+          return null
+        }
+
+        return <DefaultCollection {...props} />
+      }
+    })
   }),
   // Equation block & inline variant
   Equation: dynamic(() => {
