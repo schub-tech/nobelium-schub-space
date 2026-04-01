@@ -141,9 +141,6 @@ export default function Post (props) {
     const root = notionRootRef.current
     if (!root) return
 
-    const notionPage = root.querySelector('.notion-page')
-    if (!notionPage) return
-
     const getPlainText = value => {
       if (!Array.isArray(value)) return ''
       return value.map(part => part?.[0] || '').join('').trim()
@@ -200,10 +197,13 @@ export default function Post (props) {
         card.appendChild(imageWrap)
       }
 
+      const metaRow = document.createElement('div')
+      metaRow.className = 'home-alumni-card-meta'
+
       const nameEl = document.createElement('div')
       nameEl.className = 'home-alumni-card-name'
       nameEl.textContent = name
-      card.appendChild(nameEl)
+      metaRow.appendChild(nameEl)
 
       if (linkedinUrl) {
         const link = document.createElement('a')
@@ -220,16 +220,21 @@ export default function Post (props) {
           label.textContent = 'LinkedIn'
           link.appendChild(label)
         }
-        card.appendChild(link)
+        metaRow.appendChild(link)
       }
+
+      card.appendChild(metaRow)
 
       return card
     }
 
     const buildAlumniGrid = () => {
+      const notionPage = root.querySelector('.notion-page')
+      if (!notionPage) return false
+
       if (notionPage.querySelector('.home-alumni-grid')) return true
 
-      const alumniHeading = Array.from(notionPage.querySelectorAll('h3.notion-h2'))
+      const alumniHeading = Array.from(notionPage.querySelectorAll('h1, h2, h3, h4'))
         .find(node => node.textContent?.trim() === 'Our Schub Alumni')
       if (!alumniHeading) return false
 
@@ -244,8 +249,6 @@ export default function Post (props) {
         sectionNodes.push(cursor)
         cursor = cursor.nextElementSibling
       }
-
-      if (sectionNodes.length === 0) return false
 
       const alumni = []
       const seen = new Set()
@@ -326,15 +329,35 @@ export default function Post (props) {
 
     if (buildAlumniGrid()) return
 
+    const retryTimers = [
+      window.requestAnimationFrame(() => {
+        buildAlumniGrid()
+      }),
+      window.setTimeout(() => {
+        buildAlumniGrid()
+      }, 150),
+      window.setTimeout(() => {
+        buildAlumniGrid()
+      }, 600)
+    ]
+
     const observer = new MutationObserver(() => {
       if (buildAlumniGrid()) {
         observer.disconnect()
       }
     })
 
-    observer.observe(notionPage, { childList: true, subtree: true })
+    observer.observe(root, { childList: true, subtree: true })
 
-    return () => observer.disconnect()
+    return () => {
+      observer.disconnect()
+      retryTimers.forEach(timer => {
+        if (typeof timer === 'number') {
+          window.clearTimeout(timer)
+          window.cancelAnimationFrame(timer)
+        }
+      })
+    }
   }, [blockMap, post.slug])
 
   return (

@@ -18,7 +18,7 @@ const Footer = ({ fullWidth }) => {
       <div className="my-6 text-sm leading-6">
         <div className="flex align-baseline justify-between flex-wrap gap-2">
           <p className="font-mono tracking-tight">
-            {BLOG.title}, {from === y || !from ? y : `${from} - ${y}`}
+            Schub Space, {from === y || !from ? y : `${from} - ${y}`}
           </p>
           <div className="flex gap-4">
             <Link
@@ -34,7 +34,7 @@ const Footer = ({ fullWidth }) => {
               imprint
             </Link>
             <a
-              href="https://www.linkedin.com/company/schub-space/"
+              href="https://www.linkedin.com/company/schub-tech/"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-gray-300 transition-colors"
