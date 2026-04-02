@@ -179,7 +179,7 @@ export default function Post (props) {
       return svg
     }
 
-    const createAlumniCard = ({ name, imageSrc, imageAlt, linkedinUrl, source }) => {
+    const createAlumniCard = ({ name, imageSrc, imageAlt, linkedinUrl }) => {
       const card = document.createElement('article')
       card.className = 'home-alumni-card'
 
@@ -207,19 +207,13 @@ export default function Post (props) {
 
       if (linkedinUrl) {
         const link = document.createElement('a')
-        const isDatabaseEntry = source === 'database'
-        link.className = `home-alumni-card-link${isDatabaseEntry ? ' home-alumni-card-link-icon-only' : ''}`
+        link.className = 'home-alumni-card-link home-alumni-card-link-icon-only'
         link.href = linkedinUrl
         link.target = '_blank'
         link.rel = 'noopener noreferrer'
         link.setAttribute('aria-label', `${name} on LinkedIn`)
 
         link.appendChild(createLinkedInIcon())
-        if (!isDatabaseEntry) {
-          const label = document.createElement('span')
-          label.textContent = 'LinkedIn'
-          link.appendChild(label)
-        }
         metaRow.appendChild(link)
       }
 
@@ -235,7 +229,10 @@ export default function Post (props) {
       if (notionPage.querySelector('.home-alumni-grid')) return true
 
       const alumniHeading = Array.from(notionPage.querySelectorAll('h1, h2, h3, h4'))
-        .find(node => node.textContent?.trim() === 'Our Schub Alumni')
+        .find(node => {
+          const headingText = node.textContent?.trim()
+          return headingText === 'Our Schub Alumni' || headingText === 'Alumni'
+        })
       if (!alumniHeading) return false
 
       const sectionNodes = []
@@ -288,30 +285,10 @@ export default function Post (props) {
             name: getPlainText(properties.title),
             imageSrc: imageUrl,
             imageAlt: getPlainText(properties[picturePropertyId]) || getPlainText(properties.title),
-            linkedinUrl: getPropertyLink(properties[linkedinPropertyId]),
-            source: 'database'
+            linkedinUrl: getPropertyLink(properties[linkedinPropertyId])
           })
         })
       }
-
-      sectionNodes.forEach(node => {
-        if (!node.matches('.notion-text')) return
-
-        const figure = node.nextElementSibling
-        if (!figure?.matches('figure.notion-asset-wrapper-image')) return
-
-        const link = node.querySelector('a.notion-link[href*="linkedin.com"]')
-        const image = figure.querySelector('img')
-        const name = link?.textContent?.trim() || node.textContent?.trim()
-
-        pushAlumni({
-          name,
-          imageSrc: image?.currentSrc || image?.getAttribute('src'),
-          imageAlt: image?.getAttribute('alt'),
-          linkedinUrl: link?.href,
-          source: 'inline'
-        })
-      })
 
       if (alumni.length === 0) return false
 
@@ -413,7 +390,9 @@ export default function Post (props) {
           ref={notionRootRef}
           className={cn({
             'flex-1 pr-4': fullWidth,
-            'flex-none w-full max-w-6xl px-4': !fullWidth && isPage,
+            'flex-none w-full px-4': !fullWidth && isPage,
+            'max-w-[800px]': !fullWidth && isPage && post.slug === 'home',
+            'max-w-6xl': !fullWidth && isPage && post.slug !== 'home',
             'flex-none w-full max-w-2xl px-4': !fullWidth && !isPage
           })}
         >

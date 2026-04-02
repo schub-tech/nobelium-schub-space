@@ -22,7 +22,7 @@ function getHomeHeaderLinks (blockMap) {
       const block = blockMap.block[id]?.value
       if (!block) return
 
-      if (['header', 'sub_header', 'sub_sub_header'].includes(block.type)) {
+      if (['header', 'sub_header'].includes(block.type)) {
         links.push({
           id: block.id,
           name: getTextContent(block.properties?.title)
@@ -35,7 +35,10 @@ function getHomeHeaderLinks (blockMap) {
 
   walk(page.content)
 
-  return links
+  return [
+    { id: '__home', name: 'Home' },
+    ...links
+  ]
 }
 
 export async function getStaticProps () {

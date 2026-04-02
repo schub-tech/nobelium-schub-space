@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 
 const HEADER_OFFSET = 65
+const HOME_LINK_ID = '__home'
 
 const NavBar = ({ links, onNavigate }) => (
   <ul className="flex flex-row flex-wrap justify-center gap-x-6 gap-y-3 md:gap-x-10">
@@ -29,6 +30,14 @@ export default function Header ({ fullWidth, links = [] }) {
   const scrollToHeading = useCallback((event, id) => {
     event.preventDefault()
 
+    if (id === HOME_LINK_ID) {
+      document.documentElement.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      })
+      return
+    }
+
     const cleanId = id.replaceAll('-', '')
     const target = document.getElementById(cleanId) ||
       document.querySelector(`.notion-block-${cleanId}`)
@@ -51,14 +60,18 @@ export default function Header ({ fullWidth, links = [] }) {
   }, [useSticky])
 
   useEffect(() => {
+    if (links.length === 0) return
+
     const sentinelEl = sentinelRef.current
+    if (!(sentinelEl instanceof Element)) return
+
     const observer = new window.IntersectionObserver(handler)
     observer.observe(sentinelEl)
 
     return () => {
       sentinelEl && observer.unobserve(sentinelEl)
     }
-  }, [handler, sentinelRef])
+  }, [handler, links.length])
 
   function handleClickHeader (/** @type {MouseEvent} */ ev) {
     if (navRef.current !== ev.target) return
