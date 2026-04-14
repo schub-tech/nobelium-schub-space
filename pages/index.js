@@ -46,7 +46,10 @@ export async function getStaticProps () {
   const homePage = posts.find(p => p.slug === 'home')
 
   if (!homePage) {
-    return { notFound: true }
+    return {
+      notFound: true,
+      revalidate: 1
+    }
   }
 
   const blockMap = await getPostBlocks(homePage.id)

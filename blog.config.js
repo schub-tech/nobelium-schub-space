@@ -2,7 +2,7 @@ const BLOG = {
   title: 'Schub Space',
   author: 'Schub',
   email: '',
-  link: 'https://nobelium.vercel.app',
+  link: 'https://www.schub.space',
   description: 'Schub Space',
   lang: 'en-US', // ['en-US', 'zh-CN', 'zh-HK', 'zh-TW', 'ja-JP', 'es-ES']
   timezone: 'Asia/Shanghai', // Your Notion posts' date will be interpreted as this timezone. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for all options.
