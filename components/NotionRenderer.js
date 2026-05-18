@@ -1,4 +1,4 @@
-import { createElement as h } from 'react'
+import { createElement as h, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { NotionRenderer as Renderer } from 'react-notion-x'
 import { getTextContent } from 'notion-utils'
@@ -7,10 +7,15 @@ import { useConfig } from '@/lib/config'
 import Toggle from '@/components/notion-blocks/Toggle'
 
 const ALUMNI_COLLECTION_ID = '3354585c-aca1-808a-ba06-000b3bc47165'
+const ALUMNI_STORIES_COLLECTION_NAME = 'The Schubkarre'
 
 function getPlainText (value) {
   if (!Array.isArray(value)) return ''
   return value.map(part => part?.[0] || '').join('').trim()
+}
+
+function normalizeText (value = '') {
+  return value.replace(/\s+/g, ' ').trim()
 }
 
 function getPropertyLink (value) {
@@ -32,6 +37,35 @@ function getNotionImageUrl (rawUrl, blockId) {
   return `https://www.notion.so/image/${encodeURIComponent(rawUrl)}?table=block&id=${blockId}&cache=v2`
 }
 
+function findPropertyId (schema, names = []) {
+  const normalizedNames = names.map(name => name.toLowerCase())
+  return Object.entries(schema || {})
+    .find(([, property]) => normalizedNames.includes(property?.name?.toLowerCase()))?.[0]
+}
+
+function getPropertyText (properties, propertyId) {
+  return getPlainText(properties?.[propertyId])
+}
+
+function getPropertyFileUrl ({ properties, propertyId, blockId, recordMap }) {
+  const rawUrl = getPropertyLink(properties?.[propertyId])
+  if (!rawUrl) return ''
+
+  return recordMap.signed_urls?.[`${blockId}:${rawUrl}`] ||
+    recordMap.signed_urls?.[rawUrl] ||
+    rawUrl
+}
+
+function getCollectionRows ({ recordMap, collectionId, viewId }) {
+  const queryRows = recordMap.collection_query?.[collectionId]?.[viewId]?.collection_group_results?.blockIds || []
+  if (queryRows.length > 0) return queryRows
+
+  return Object.values(recordMap.block || {})
+    .map(block => block?.value)
+    .filter(block => block?.parent_id === collectionId && block?.type === 'page')
+    .map(block => block.id)
+}
+
 function LinkedInIcon () {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -50,11 +84,9 @@ function AlumniCollection ({ block, ctx }) {
   const recordMap = ctx?.recordMap || {}
   const collection = recordMap.collection?.[collectionId]?.value
   const schema = collection?.schema || {}
-  const picturePropertyId = Object.entries(schema)
-    .find(([, property]) => property?.name === 'Picture')?.[0]
-  const linkedinPropertyId = Object.entries(schema)
-    .find(([, property]) => property?.name === 'LinkedIn')?.[0]
-  const rowIds = recordMap.collection_query?.[collectionId]?.[viewId]?.collection_group_results?.blockIds || []
+  const picturePropertyId = findPropertyId(schema, ['Picture'])
+  const linkedinPropertyId = findPropertyId(schema, ['LinkedIn'])
+  const rowIds = getCollectionRows({ recordMap, collectionId, viewId })
 
   const alumni = rowIds
     .map(id => recordMap.block?.[id]?.value)
@@ -104,6 +136,112 @@ function AlumniCollection ({ block, ctx }) {
         </article>
       ))}
     </div>
+  )
+}
+
+function AlumniStoriesCollection ({ block, ctx }) {
+  const collectionBlock = block?.value || block
+  const collectionId = collectionBlock?.collection_id || collectionBlock?.format?.collection_pointer?.id
+  const viewId = collectionBlock?.view_ids?.[0]
+  const recordMap = ctx?.recordMap || {}
+  const collection = recordMap.collection?.[collectionId]?.value
+  const schema = collection?.schema || {}
+  const companyPropertyId = findPropertyId(schema, ['Company', 'Role', 'Subtitle'])
+  const storyPropertyId = findPropertyId(schema, ['Story', 'Success Story', 'Quote'])
+  const videoPropertyId = findPropertyId(schema, ['Video'])
+  const orderPropertyId = findPropertyId(schema, ['Order', 'Sort'])
+  const rowIds = getCollectionRows({ recordMap, collectionId, viewId })
+
+  const stories = rowIds
+    .map(id => recordMap.block?.[id]?.value)
+    .filter(Boolean)
+    .map((row, index) => {
+      const properties = row.properties || {}
+      const orderText = getPropertyText(properties, orderPropertyId)
+      return {
+        id: row.id,
+        name: getPropertyText(properties, 'title'),
+        company: getPropertyText(properties, companyPropertyId),
+        story: getPropertyText(properties, storyPropertyId),
+        videoSrc: getPropertyFileUrl({
+          properties,
+          propertyId: videoPropertyId,
+          blockId: row.id,
+          recordMap
+        }),
+        order: Number.parseFloat(orderText) || index + 1
+      }
+    })
+    .filter(story => story.name || story.story || story.videoSrc)
+    .sort((a, b) => a.order - b.order)
+
+  if (stories.length === 0) return null
+
+  return <AlumniStoriesCarousel stories={stories} />
+}
+
+function AlumniStoriesCarousel ({ stories }) {
+  const [activeIndex, setActiveIndex] = useState(0)
+  const activeStory = stories[activeIndex]
+  const hasMultipleStories = stories.length > 1
+  const goToPreviousStory = () => {
+    setActiveIndex(index => (index - 1 + stories.length) % stories.length)
+  }
+  const goToNextStory = () => {
+    setActiveIndex(index => (index + 1) % stories.length)
+  }
+
+  return (
+    <section className="home-alumni-stories" aria-label="Schub alumni success stories">
+      <div className="home-alumni-stories-frame">
+        <article key={activeStory.id} className="home-alumni-story-card">
+          {activeStory.videoSrc && (
+            <div className="home-alumni-story-video-wrap">
+              <video
+                className="home-alumni-story-video"
+                src={activeStory.videoSrc}
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+              />
+            </div>
+          )}
+          <div className="home-alumni-story-copy">
+            <div>
+              <h3>{activeStory.name}</h3>
+              {activeStory.company && <p className="home-alumni-story-company">{activeStory.company}</p>}
+            </div>
+            {activeStory.story && <p className="home-alumni-story-text">{activeStory.story}</p>}
+          </div>
+        </article>
+
+        {hasMultipleStories && (
+          <div className="home-alumni-story-controls">
+            <button
+              type="button"
+              className="home-alumni-story-arrow"
+              onClick={goToPreviousStory}
+              aria-label="Previous alumni story"
+            >
+              <span aria-hidden="true">&lt;</span>
+            </button>
+            <span className="home-alumni-story-count">
+              {activeIndex + 1}/{stories.length}
+            </span>
+            <button
+              type="button"
+              className="home-alumni-story-arrow"
+              onClick={goToNextStory}
+              aria-label="Next alumni story"
+            >
+              <span aria-hidden="true">&gt;</span>
+            </button>
+          </div>
+        )}
+      </div>
+    </section>
   )
 }
 
@@ -176,8 +314,12 @@ const components = {
       return function CollectionSwitch (props) {
         const block = props.block?.value || props.block
         const collectionId = block?.collection_id || block?.format?.collection_pointer?.id
+        const collectionName = normalizeText(getTextContent(props.ctx?.recordMap?.collection?.[collectionId]?.value?.name || []))
         if (collectionId === ALUMNI_COLLECTION_ID) {
           return <AlumniCollection {...props} />
+        }
+        if (collectionName === ALUMNI_STORIES_COLLECTION_NAME) {
+          return <AlumniStoriesCollection {...props} />
         }
 
         return <DefaultCollection {...props} />
