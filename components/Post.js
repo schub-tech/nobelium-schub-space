@@ -390,9 +390,7 @@ export default function Post (props) {
           ref={notionRootRef}
           className={cn({
             'flex-1 pr-4': fullWidth,
-            'flex-none w-full px-4': !fullWidth && isPage,
-            'max-w-[800px]': !fullWidth && isPage && post.slug === 'home',
-            'max-w-6xl': !fullWidth && isPage && post.slug !== 'home',
+            'flex-none w-full max-w-6xl px-4': !fullWidth && isPage,
             'flex-none w-full max-w-2xl px-4': !fullWidth && !isPage
           })}
         >

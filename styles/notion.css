@@ -387,9 +387,20 @@ pre[class*='language-'] {
   }
 }
 
-/* Limit body text width for readability */
-[data-post-slug='home'] .notion-page > .notion-text {
-  max-width: 680px;
+/* Let hero content span the same full width as the page grid */
+[data-post-slug='home'] .notion-page > .notion-text,
+[data-post-slug='home'] .notion-page > .notion-h1,
+[data-post-slug='home'] .notion-page > .notion-quote,
+[data-post-slug='home'] .notion-page > .notion-asset-wrapper-image,
+[data-post-slug='home'] .notion-page > .notion-asset-wrapper {
+  max-width: none;
+  width: 100%;
+}
+
+[data-post-slug='home'] .notion-page > .notion-asset-wrapper-image img,
+[data-post-slug='home'] .notion-page > .notion-asset-wrapper img {
+  width: 100%;
+  height: auto;
 }
 
 /* --- Home page intake callout --- */

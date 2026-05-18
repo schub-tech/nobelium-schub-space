@@ -49,6 +49,9 @@ importers:
       preact:
         specifier: ^10.19.2
         version: 10.29.0
+      prismjs:
+        specifier: ^1.30.0
+        version: 1.30.0
       prop-types:
         specifier: ^15.8.1
         version: 15.8.1

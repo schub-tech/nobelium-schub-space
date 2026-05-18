@@ -9,7 +9,7 @@ const NavBar = ({ links, onNavigate }) => (
       <li
         key={link.id}
         suppressHydrationWarning
-        className="block text-sm text-black dark:text-gray-50 nav font-mono tracking-tight"
+        className="block text-[1.3125rem] text-black dark:text-gray-50 nav font-mono tracking-tight"
       >
         <a
           href={`#${link.id.replaceAll('-', '')}`}
