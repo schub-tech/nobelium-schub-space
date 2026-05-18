@@ -403,6 +403,47 @@ pre[class*='language-'] {
   height: auto;
 }
 
+/* Pan the collaboration mosaic on narrow screens instead of shrinking it into illegibility */
+[data-post-slug='home'] .home-collaboration-mosaic {
+  overflow: hidden;
+}
+
+[data-post-slug='home'] .home-collaboration-mosaic-image {
+  display: block;
+}
+
+@media (max-width: 767px) {
+  [data-post-slug='home'] .home-collaboration-mosaic {
+    width: calc(100vw - 2rem);
+    max-width: none;
+    margin-left: calc(50% - 50vw + 1rem);
+  }
+
+  [data-post-slug='home'] .home-collaboration-mosaic-image {
+    width: max(180vw, 900px) !important;
+    max-width: none !important;
+    animation: home-collaboration-pan 18s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) and (max-width: 767px) {
+  [data-post-slug='home'] .home-collaboration-mosaic-image {
+    animation: none;
+    transform: translateX(calc(-50% + 50vw - 1rem));
+  }
+}
+
+@keyframes home-collaboration-pan {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-100% + 100vw - 2rem));
+  }
+}
+
 /* --- Home page intake callout --- */
 
 [data-post-slug='home'] .notion-callout {

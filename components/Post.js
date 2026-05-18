@@ -134,6 +134,52 @@ export default function Post (props) {
     }
   }, [post.slug])
 
+  // Home page: make the collaboration mosaic pan on narrow screens
+  useEffect(() => {
+    if (post.slug !== 'home') return
+
+    const root = notionRootRef.current
+    if (!root) return
+
+    const markCollaborationMosaic = () => {
+      const notionPage = root.querySelector('.notion-page')
+      if (!notionPage) return false
+      if (notionPage.querySelector('.home-collaboration-mosaic')) return true
+
+      const quote = Array.from(notionPage.querySelectorAll('.notion-quote, .notion-text'))
+        .find(node => node.textContent?.replace(/\s+/g, ' ').trim().includes('Isolation shadows creativity'))
+      if (!quote) return false
+
+      let cursor = quote.nextElementSibling
+      while (cursor) {
+        if (cursor.classList?.contains('notion-asset-wrapper-image') || cursor.classList?.contains('notion-asset-wrapper')) {
+          cursor.classList.add('home-collaboration-mosaic')
+          cursor.querySelector('img')?.classList.add('home-collaboration-mosaic-image')
+          return true
+        }
+
+        if (cursor.matches?.('h1, h2, h3, .notion-callout, .home-speakers-grid, .home-alumni-grid')) {
+          return false
+        }
+
+        cursor = cursor.nextElementSibling
+      }
+
+      return false
+    }
+
+    if (markCollaborationMosaic()) return
+
+    const observer = new MutationObserver(() => {
+      if (markCollaborationMosaic()) {
+        observer.disconnect()
+      }
+    })
+    observer.observe(root, { childList: true, subtree: true })
+
+    return () => observer.disconnect()
+  }, [post.slug])
+
   // Home page: transform alumni content into a card grid
   useEffect(() => {
     if (post.slug !== 'home') return
