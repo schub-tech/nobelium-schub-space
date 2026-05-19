@@ -450,7 +450,7 @@ pre[class*='language-'] {
   display: flex;
   justify-content: center;
   padding: 2rem 1.5rem;
-  margin: 2.5rem auto 3rem;
+  margin: 0.5rem auto 1rem;
   border: 1px solid rgba(255, 255, 255, 0.16);
   background: rgba(255, 255, 255, 0.03);
   text-align: center;
