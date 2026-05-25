@@ -729,6 +729,8 @@ pre[class*='language-'] {
 }
 
 [data-post-slug='home'] .home-alumni-story-video-wrap {
+  position: relative;
+  overflow: hidden;
   background: rgba(255, 255, 255, 0.04);
 }
 
@@ -738,6 +740,37 @@ pre[class*='language-'] {
   aspect-ratio: 9 / 16;
   max-height: 520px;
   object-fit: cover;
+  opacity: 1;
+  transition: opacity 280ms ease-out;
+}
+
+[data-post-slug='home'] .home-alumni-story-video-wrap[data-video-ready='false'] .home-alumni-story-video {
+  opacity: 0;
+}
+
+[data-post-slug='home'] .home-alumni-story-video-loader {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+    rgba(15, 15, 15, 0.88);
+}
+
+[data-post-slug='home'] .home-alumni-story-video-loader span {
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid rgba(255, 255, 255, 0.24);
+  border-top-color: rgba(255, 255, 255, 0.82);
+  border-radius: 999px;
+  animation: home-alumni-video-loading 800ms linear infinite;
+}
+
+@keyframes home-alumni-video-loading {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 [data-post-slug='home'] .home-alumni-story-copy {

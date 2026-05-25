@@ -1,4 +1,4 @@
-import { createElement as h, useState } from 'react'
+import { createElement as h, useCallback, useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { NotionRenderer as Renderer, Text } from 'react-notion-x'
 import { getTextContent } from 'notion-utils'
@@ -184,21 +184,62 @@ function AlumniStoriesCollection ({ block, ctx }) {
 
 function AlumniStoriesCarousel ({ stories }) {
   const [activeIndex, setActiveIndex] = useState(0)
+  const [loadedVideoSources, setLoadedVideoSources] = useState(() => new Set())
   const activeStory = stories[activeIndex]
+  const nextStory = stories[(activeIndex + 1) % stories.length]
   const hasMultipleStories = stories.length > 1
+  const isVideoReady = !activeStory.videoSrc || loadedVideoSources.has(activeStory.videoSrc)
   const goToPreviousStory = () => {
     setActiveIndex(index => (index - 1 + stories.length) % stories.length)
   }
   const goToNextStory = () => {
     setActiveIndex(index => (index + 1) % stories.length)
   }
+  const markVideoReady = useCallback(src => {
+    if (!src) return
+
+    setLoadedVideoSources(sources => {
+      if (sources.has(src)) return sources
+
+      const nextSources = new Set(sources)
+      nextSources.add(src)
+      return nextSources
+    })
+  }, [])
+
+  useEffect(() => {
+    if (!nextStory?.videoSrc || loadedVideoSources.has(nextStory.videoSrc)) return
+
+    const video = document.createElement('video')
+    video.preload = 'auto'
+    video.muted = true
+    video.playsInline = true
+    video.src = nextStory.videoSrc
+    video.load()
+
+    const handleReady = () => markVideoReady(nextStory.videoSrc)
+    video.addEventListener('loadeddata', handleReady, { once: true })
+    video.addEventListener('canplay', handleReady, { once: true })
+
+    return () => {
+      video.removeEventListener('loadeddata', handleReady)
+      video.removeEventListener('canplay', handleReady)
+      video.removeAttribute('src')
+      video.load()
+    }
+  }, [activeIndex, loadedVideoSources, markVideoReady, nextStory?.videoSrc])
 
   return (
     <section className="home-alumni-stories" aria-label="Schub alumni success stories">
       <div className="home-alumni-stories-frame">
         <article key={activeStory.id} className="home-alumni-story-card">
           {activeStory.videoSrc && (
-            <div className="home-alumni-story-video-wrap">
+            <div className="home-alumni-story-video-wrap" data-video-ready={isVideoReady ? 'true' : 'false'}>
+              {!isVideoReady && (
+                <div className="home-alumni-story-video-loader" aria-hidden="true">
+                  <span />
+                </div>
+              )}
               <video
                 className="home-alumni-story-video"
                 src={activeStory.videoSrc}
@@ -207,6 +248,8 @@ function AlumniStoriesCarousel ({ stories }) {
                 muted
                 playsInline
                 preload="auto"
+                onLoadedData={() => markVideoReady(activeStory.videoSrc)}
+                onCanPlay={() => markVideoReady(activeStory.videoSrc)}
               />
             </div>
           )}
