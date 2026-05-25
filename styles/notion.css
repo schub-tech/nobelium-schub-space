@@ -768,6 +768,7 @@ pre[class*='language-'] {
   color: #fff;
   font-size: 1rem;
   line-height: 1.65;
+  white-space: pre-line;
 }
 
 [data-post-slug='home'] .home-alumni-story-controls {

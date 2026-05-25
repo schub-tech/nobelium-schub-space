@@ -1,7 +1,7 @@
 import { createElement as h, useState } from 'react'
 import dynamic from 'next/dynamic'
 import Head from 'next/head'
-import { NotionRenderer as Renderer } from 'react-notion-x'
+import { NotionRenderer as Renderer, Text } from 'react-notion-x'
 import { getTextContent } from 'notion-utils'
 import { FONTS_SANS, FONTS_SERIF } from '@/consts'
 import { useConfig } from '@/lib/config'
@@ -161,9 +161,11 @@ function AlumniStoriesCollection ({ block, ctx }) {
       const orderText = getPropertyText(properties, orderPropertyId)
       return {
         id: row.id,
+        block: row,
         name: getPropertyText(properties, 'title'),
         company: getPropertyText(properties, companyPropertyId),
-        story: getPropertyText(properties, storyPropertyId),
+        story: getPlainText(properties[storyPropertyId]),
+        storyRichText: properties[storyPropertyId],
         videoSrc: getPropertyFileUrl({
           properties,
           propertyId: videoPropertyId,
@@ -224,7 +226,11 @@ function AlumniStoriesCarousel ({ stories }) {
               <h3>{activeStory.name}</h3>
               {activeStory.company && <p className="home-alumni-story-company">{activeStory.company}</p>}
             </div>
-            {activeStory.story && <p className="home-alumni-story-text">{activeStory.story}</p>}
+            {activeStory.story && (
+              <p className="home-alumni-story-text">
+                <Text value={activeStory.storyRichText} block={activeStory.block} />
+              </p>
+            )}
           </div>
         </article>
 
