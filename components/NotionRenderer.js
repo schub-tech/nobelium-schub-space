@@ -1,6 +1,5 @@
 import { createElement as h, useState } from 'react'
 import dynamic from 'next/dynamic'
-import Head from 'next/head'
 import { NotionRenderer as Renderer, Text } from 'react-notion-x'
 import { getTextContent } from 'notion-utils'
 import { FONTS_SANS, FONTS_SERIF } from '@/consts'
@@ -186,7 +185,6 @@ function AlumniStoriesCollection ({ block, ctx }) {
 function AlumniStoriesCarousel ({ stories }) {
   const [activeIndex, setActiveIndex] = useState(0)
   const activeStory = stories[activeIndex]
-  const nextStory = stories[(activeIndex + 1) % stories.length]
   const hasMultipleStories = stories.length > 1
   const goToPreviousStory = () => {
     setActiveIndex(index => (index - 1 + stories.length) % stories.length)
@@ -197,15 +195,6 @@ function AlumniStoriesCarousel ({ stories }) {
 
   return (
     <section className="home-alumni-stories" aria-label="Schub alumni success stories">
-      <Head>
-        <link rel="preconnect" href="https://file.notion.so" />
-        {activeStory.videoSrc && /^https?:\/\//.test(activeStory.videoSrc) && (
-          <link rel="preload" as="video" href={activeStory.videoSrc} />
-        )}
-        {hasMultipleStories && nextStory.videoSrc && /^https?:\/\//.test(nextStory.videoSrc) && (
-          <link rel="prefetch" as="video" href={nextStory.videoSrc} />
-        )}
-      </Head>
       <div className="home-alumni-stories-frame">
         <article key={activeStory.id} className="home-alumni-story-card">
           {activeStory.videoSrc && (
