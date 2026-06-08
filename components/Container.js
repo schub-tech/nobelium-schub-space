@@ -50,8 +50,9 @@ const Container = ({ children, layout, fullWidth, headerLinks, ...customMeta }) 
           content={image}
         />
         <meta property="og:image:secure_url" content={image} />
+        <meta property="og:image:type" content="image/png" />
         <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
+        <meta property="og:image:height" content="627" />
         <meta property="og:image:alt" content={`${BLOG.title} logo`} />
         <meta property="og:type" content={meta.type} />
         <meta name="twitter:card" content="summary_large_image" />
