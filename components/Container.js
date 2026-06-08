@@ -12,9 +12,15 @@ const Container = ({ children, layout, fullWidth, headerLinks, ...customMeta }) 
   const url = BLOG.path.length ? `${BLOG.link}/${BLOG.path}` : BLOG.link
   const meta = {
     title: BLOG.title,
+    description: BLOG.description,
     type: 'website',
     ...customMeta
   }
+  const imageSource = meta.image || BLOG.ogImage || '/og-image.png'
+  const image = /^https?:\/\//.test(imageSource)
+    ? imageSource
+    : `${url}${imageSource.startsWith('/') ? '' : '/'}${imageSource}`
+
   return (
     <div>
       <Head>
@@ -41,20 +47,21 @@ const Container = ({ children, layout, fullWidth, headerLinks, ...customMeta }) 
         />
         <meta
           property="og:image"
-          content={`${BLOG.ogImageGenerateURL}/${encodeURIComponent(
-            meta.title
-          )}.png?theme=dark&md=1&fontSize=125px&images=https%3A%2F%2Fnobelium.vercel.app%2Flogo-for-dark-bg.svg`}
+          content={image}
         />
+        <meta property="og:image:secure_url" content={image} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={`${BLOG.title} logo`} />
         <meta property="og:type" content={meta.type} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:description" content={meta.description} />
         <meta name="twitter:title" content={meta.title} />
         <meta
           name="twitter:image"
-          content={`${BLOG.ogImageGenerateURL}/${encodeURIComponent(
-            meta.title
-          )}.png?theme=dark&md=1&fontSize=125px&images=https%3A%2F%2Fnobelium.vercel.app%2Flogo-for-dark-bg.svg`}
+          content={image}
         />
+        <meta name="twitter:image:alt" content={`${BLOG.title} logo`} />
         {meta.type === 'article' && (
           <>
             <meta

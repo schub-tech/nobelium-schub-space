@@ -17,7 +17,7 @@ const BLOG = {
   showAbout: true,
   showArchive: true,
   autoCollapsedNavBar: false, // The automatically collapsed navigation bar
-  ogImageGenerateURL: 'https://og-image-craigary.vercel.app', // The link to generate OG image, don't end with a slash
+  ogImage: '/og-image.png',
   socialLink: 'https://www.schub.tech/',
   seo: {
     keywords: ['Blog', 'Website', 'Notion'],
