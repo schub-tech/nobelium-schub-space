@@ -1,6 +1,19 @@
 import { useEffect } from 'react'
 import posthog from 'posthog-js'
 
+function getNextIntakeBatchLink (target) {
+  if (!(target instanceof Element)) return null
+
+  const link = target.closest('a[href*="app.dover.com/apply"], a[href*="typeform.com"]')
+  if (!link) return null
+
+  const callout = link.closest('.notion-callout')
+  const calloutText = callout?.textContent?.replace(/\s+/g, ' ').trim() || ''
+  if (!calloutText.toLowerCase().includes('next intake')) return null
+
+  return link
+}
+
 const PostHog = ({ posthogKey, posthogHost }) => {
   useEffect(() => {
     if (!posthogKey || !posthogHost || posthog.__loaded) return
@@ -25,6 +38,29 @@ const PostHog = ({ posthogKey, posthogHost }) => {
       person_profiles: 'always'
     })
   }, [posthogKey, posthogHost])
+
+  useEffect(() => {
+    const handleClick = event => {
+      const link = getNextIntakeBatchLink(event.target)
+      if (!link) return
+
+      posthog.capture('next_intake_batch_link_clicked', {
+        href: link.href,
+        link_text: link.textContent?.replace(/\s+/g, ' ').trim() || '',
+        intake_text: link.closest('.notion-callout')?.textContent?.replace(/\s+/g, ' ').trim() || '',
+        notion_block_id: link.closest('[data-id]')?.getAttribute('data-id') || '',
+        page_path: window.location.pathname,
+        page_url: window.location.href,
+        page_title: document.title,
+        target: link.target || '',
+        outbound: link.hostname !== window.location.hostname,
+        source: 'home_intake_callout'
+      })
+    }
+
+    document.addEventListener('click', handleClick)
+    return () => document.removeEventListener('click', handleClick)
+  }, [])
 
   return null
 }
