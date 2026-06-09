@@ -14,6 +14,7 @@ import Scripts from '@/components/Scripts'
 
 const Ackee = dynamic(() => import('@/components/Ackee'), { ssr: false })
 const Gtag = dynamic(() => import('@/components/Gtag'), { ssr: false })
+const PostHog = dynamic(() => import('@/components/PostHog'), { ssr: false })
 
 export default function MyApp ({ Component, pageProps, config, locale }) {
   return (
@@ -29,6 +30,12 @@ export default function MyApp ({ Component, pageProps, config, locale }) {
               />
             )}
             {process.env.VERCEL_ENV === 'production' && config?.analytics?.provider === 'ga' && <Gtag />}
+            {config?.isProd && config?.analytics?.provider === 'posthog' && (
+              <PostHog
+                posthogKey={config.analytics.posthogConfig.projectApiKey}
+                posthogHost={config.analytics.posthogConfig.apiHost}
+              />
+            )}
             <Component {...pageProps} />
           </>
         </ThemeProvider>

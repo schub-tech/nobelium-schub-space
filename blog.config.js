@@ -26,7 +26,7 @@ const BLOG = {
   notionPageId: process.env.NOTION_PAGE_ID, // DO NOT CHANGE THIS！！！
   notionAccessToken: process.env.NOTION_ACCESS_TOKEN, // Useful if you prefer not to make your database public
   analytics: {
-    provider: '', // Currently we support Google Analytics and Ackee, please fill with 'ga' or 'ackee', leave it empty to disable it.
+    provider: 'posthog', // Supported providers: 'ga', 'ackee', or 'posthog'. Leave it empty to disable analytics.
     ackeeConfig: {
       tracker: '', // e.g 'https://ackee.craigary.net/tracker.js'
       dataAckeeServer: '', // e.g https://ackee.craigary.net , don't end with a slash
@@ -34,6 +34,10 @@ const BLOG = {
     },
     gaConfig: {
       measurementId: '' // e.g: G-XXXXXXXXXX
+    },
+    posthogConfig: {
+      apiHost: 'https://eu.i.posthog.com',
+      projectApiKey: 'phc_rHJBcWvfNJWr7S68wgNA7BGFHCraBFJoy3C7xdHdHMPz'
     }
   },
   comment: {
