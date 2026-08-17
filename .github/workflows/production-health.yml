@@ -1,0 +1,53 @@
+name: Production health
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-production:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check production endpoints
+        env:
+          POSTHOG_HOST: https://eu.i.posthog.com
+          POSTHOG_PROJECT_KEY: phc_rHJBcWvfNJWr7S68wgNA7BGFHCraBFJoy3C7xdHdHMPz
+        run: |
+          failed_urls=""
+
+          for url in \
+            "https://www.schub.space/" \
+            "https://www.schub.space/privacy" \
+            "https://www.schub.space/imprint" \
+            "https://www.schub.space/api/health"
+          do
+            status="$(curl --silent --show-error --location --output /dev/null \
+              --write-out '%{http_code}' --max-time 30 --retry 2 \
+              --retry-all-errors "$url")" || status="000"
+
+            if [ "$status" != "200" ]; then
+              failed_urls="${failed_urls}${url} (${status}), "
+            fi
+          done
+
+          if [ -z "$failed_urls" ]; then
+            exit 0
+          fi
+
+          payload="$(jq --null-input \
+            --arg token "$POSTHOG_PROJECT_KEY" \
+            --arg failed_urls "$failed_urls" \
+            --arg run_url "https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            '{api_key: $token, event: "site_health_check_failed", properties: {distinct_id: "production-health-monitor", failed_urls: $failed_urls, workflow_run_url: $run_url}}')"
+
+          curl --silent --show-error --fail \
+            --header 'Content-Type: application/json' \
+            --data "$payload" \
+            "$POSTHOG_HOST/i/v0/e/"
+
+          echo "Production health check failed: $failed_urls"
+          exit 1

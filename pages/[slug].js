@@ -74,7 +74,7 @@ export default function BlogPost ({ post, blockMap, emailHash }) {
 }
 
 export async function getStaticPaths () {
-  const posts = await getAllPosts({ includePages: true })
+  const posts = await getAllPosts({ includePages: true, throwOnFailure: true })
   return {
     paths: posts.filter(row => row.slug !== 'home').map(row => `${clientConfig.path}/${row.slug}`),
     fallback: true
@@ -82,10 +82,15 @@ export async function getStaticPaths () {
 }
 
 export async function getStaticProps ({ params: { slug } }) {
-  const posts = await getAllPosts({ includePages: true })
+  const posts = await getAllPosts({ includePages: true, throwOnFailure: true })
   const post = posts.find(t => t.slug === slug)
 
-  if (!post) return { notFound: true }
+  if (!post) {
+    return {
+      notFound: true,
+      revalidate: 60
+    }
+  }
 
   const blockMap = await getPostBlocks(post.id)
   const emailHash = createHash('md5')

@@ -14,7 +14,7 @@ function getNextIntakeBatchLink (target) {
   return link
 }
 
-const PostHog = ({ posthogKey, posthogHost }) => {
+const PostHog = ({ posthogKey, posthogHost, isNotFoundPage }) => {
   useEffect(() => {
     if (!posthogKey || !posthogHost || posthog.__loaded) return
 
@@ -38,6 +38,15 @@ const PostHog = ({ posthogKey, posthogHost }) => {
       person_profiles: 'always'
     })
   }, [posthogKey, posthogHost])
+
+  useEffect(() => {
+    if (!isNotFoundPage || !posthog.__loaded) return
+
+    posthog.capture('404_viewed', {
+      path: window.location.pathname,
+      query: window.location.search
+    })
+  }, [isNotFoundPage])
 
   useEffect(() => {
     const handleClick = event => {

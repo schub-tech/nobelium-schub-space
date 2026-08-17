@@ -42,13 +42,16 @@ function getHomeHeaderLinks (blockMap) {
 }
 
 export async function getStaticProps () {
-  const posts = await getAllPosts({ includePages: true })
+  const posts = await getAllPosts({ includePages: true, throwOnFailure: true })
   const homePage = posts.find(p => p.slug === 'home')
 
   if (!homePage) {
+    console.error('Homepage Notion page with slug "home" was not found among published pages.', {
+      publishedSlugs: posts.map(post => post.slug).filter(Boolean)
+    })
     return {
       notFound: true,
-      revalidate: 1
+      revalidate: 60
     }
   }
 
@@ -61,7 +64,7 @@ export async function getStaticProps () {
 
   return {
     props: { post: homePage, blockMap, emailHash },
-    revalidate: 1
+    revalidate: 300
   }
 }
 

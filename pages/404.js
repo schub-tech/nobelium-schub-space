@@ -11,3 +11,5 @@ export default function Page404 () {
     </Container>
   )
 }
+
+Page404.isNotFoundPage = true

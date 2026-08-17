@@ -34,6 +34,7 @@ export default function MyApp ({ Component, pageProps, config, locale }) {
               <PostHog
                 posthogKey={config.analytics.posthogConfig.projectApiKey}
                 posthogHost={config.analytics.posthogConfig.apiHost}
+                isNotFoundPage={Component.isNotFoundPage === true}
               />
             )}
             <Component {...pageProps} />
